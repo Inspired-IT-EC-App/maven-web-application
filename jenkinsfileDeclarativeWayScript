@@ -1,0 +1,56 @@
+pipeline {
+
+    agent any
+
+tools {
+   maven 'maven-3.8.4'   
+}
+
+triggers {
+  pollSCM '* * * * *'
+}
+
+options {
+  timestamps ()
+  buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')
+}
+
+    stages {
+        stage('CheckoutCode') {
+	        steps {
+	            git branch: 'development', credentialsId: '6ce9b417-ae68-4892-9058-ef0666b9897a', url: 'https://github.com/Inspired-IT-EC-App/maven-web-application.git' 
+	        }
+	    }
+  
+     //Do the Build 
+        stage('Build') {
+            steps { 
+	            sh "mvn clean package"
+	        }
+        }
+	 
+	 //executeSonarQube Report 
+	   stage('ExecuteSonarQubeReport') {
+	      steps {
+		      sh "mvn clean sonar:sonar" 
+		  }
+	   }
+	 
+	 //UploadArtifactIntoNexus
+       stage(UploadArtifactIntoNexus) {
+	      steps {
+		     sh "mvn clean deploy"
+		  }
+	   }	
+	   
+	   //DeployAppToTomcat
+	   stage ('DeployAppToTomcat') {
+	      steps {
+		     sshagent(['01bb01a1-9228-420b-8d4e-302ce1aae877']) {
+	         sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@3.142.121.167:/opt/apache-tomcat-9.0.56/webapps/"  
+		     }
+	       }
+	   }
+ } //stage closing 
+
+} // Closing Pipeline
