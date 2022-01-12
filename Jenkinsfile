@@ -16,6 +16,7 @@ node
    
    // Execute SonarQube Report
    
+/*
     stage('ExecuteSonarQubeReport')
     {
 	  sh "${mavenHome}/bin/mvn clean sonar:sonar" 
@@ -44,5 +45,6 @@ node
    Mandeep Singh,
    82970''', cc: 'thakur5735@gmail.com', from: '', replyTo: '', subject: 'Build Over..', to: 'thakur5735@gmail.com'
   }
+*/
 }
 
